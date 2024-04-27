@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -23,22 +24,38 @@ class MainActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var mMap: GoogleMap
+    private var fusedLocationClient: FusedLocationProviderClient? = null
+    private var mMap: GoogleMap? = null
     private var latLang: LatLng? = null
+    private var mapFragment: SupportMapFragment? = null
+
+    private var findNearestMetroStationButton: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        instantiateClassInstances()
+        getCurrentLocation()
+
+        findNearestMetroStationButton?.setOnClickListener {
+            displayNearestMetroStation()
+        }
+
+    }
+
+    private fun instantiateClassInstances() {
+
+        findNearestMetroStationButton = binding.buttonFindNearestMetro
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync { googleMap ->
-            mMap = googleMap
+        mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map_fragment) as SupportMapFragment
+        if (mapFragment != null) {
+            mapFragment?.getMapAsync { googleMap ->
+                mMap = googleMap
+            }
         }
-        getCurrentLocation()
     }
 
     private fun getCurrentLocation() {
@@ -59,8 +76,8 @@ class MainActivity : AppCompatActivity() {
             )
             return
         }else {
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location : Location? ->
+            fusedLocationClient?.lastLocation?.
+                addOnSuccessListener { location : Location? ->
                     location?.let {
                         latLang = LatLng(location.latitude, location.longitude)
                         mMap?.addMarker(
@@ -70,6 +87,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
         }
+
+    }
+
+    private fun displayNearestMetroStation() {
 
     }
 }
